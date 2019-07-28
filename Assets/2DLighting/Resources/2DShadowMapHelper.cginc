@@ -15,6 +15,16 @@ float4x4 _ShadowMap2DVP_Down;
 float4x4 _ShadowMap2DVP_Left;
 float4x4 _ShadowMap2DVP_Up;
 
+//Convert raw platform-dependent z to uniform range(1, 0)
+float ConvertClipPosZTo10(float rawZ) {
+#if UNITY_REVERSED_Z	
+	return rawZ / (UNITY_NEAR_CLIP_VALUE);
+#else
+	rawZ = (1.0f - rawZ) / (1.0 - UNITY_NEAR_CLIP_VALUE);
+	return rawZ;
+#endif
+}
+
 float GetShadowMapVStartAndInterval(out float interval) {
 	float VStart = (_ShadowMap2DLightIndex * 4 + 0.5)* _ShadowMap2DSize.y;
 	interval = _ShadowMap2DSize.y;
@@ -29,10 +39,7 @@ float GetShadowMapVStartAndInterval(out float interval) {
 float2 GetClipPosXZ(float2 worldPos, float4x4 vp, out half outofbound) {
 	float4 clipPos = mul(vp, float4(worldPos, 0.0, 1.0));
 	clipPos /= clipPos.w;
-#if UNITY_REVERSED_Z	//To match z direction during rendering shadowmap, reverse z here as well.
-#else
-	clipPos.z = 1.0f - clipPos.z;
-#endif
+	clipPos.z = ConvertClipPosZTo10(clipPos.z);
 	outofbound = (abs(clipPos.x) - 1.0) > 0.0 ? 1.0 : 0.0;
 	outofbound += clipPos.z - saturate(clipPos.z) != 0.0 ? 1.0 : 0.0;
 	return float2(clipPos.x, clipPos.z);
@@ -52,7 +59,7 @@ float SampleShadow(float2 worldPos) {
 	
 	//Sample shadowmap.
 	float shadow = 0.0;
-	[unroll]
+	UNITY_UNROLL
 	for (int i = 0; i < 4; i++) {
 		float2 shadowMapUV = float2((clipPosXZ[i].x + 1.0f) / 2.0f, shadowMapVStart + i * shadowMapInterval);
 		float shadowMapClipPosZ = tex2D(_ShadowMap2D, shadowMapUV);

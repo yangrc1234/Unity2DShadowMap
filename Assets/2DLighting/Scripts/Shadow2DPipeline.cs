@@ -14,6 +14,7 @@ public class Shadow2DPipeline : MonoBehaviour {
     private Mesh lightingQuad;
 
     private const int MAX_LIGHTS_COUNT = 16;
+    private const int SHADOW_MAP_WIDTH = 256;
     private int ShadowMapHeight {
         get {
             return MAX_LIGHTS_COUNT * 4;
@@ -22,7 +23,7 @@ public class Shadow2DPipeline : MonoBehaviour {
 
     private void Start() {
         propertyBlock = new MaterialPropertyBlock();
-        shadowMap = new RenderTexture(1024, ShadowMapHeight, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
+        shadowMap = new RenderTexture(SHADOW_MAP_WIDTH, ShadowMapHeight, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
         shadowMap.filterMode = FilterMode.Point;
         shadowMap.antiAliasing = 1;
         shadowMap.anisoLevel = 0;
@@ -80,7 +81,7 @@ public class Shadow2DPipeline : MonoBehaviour {
 
             foreach (var shadowCaster in shadowCasters) {
                 var M = shadowCaster.transform.localToWorldMatrix;
-                for (int iLight = 0; iLight < lights.Count; iLight++) {
+                for (int iLight = 0; iLight < Mathf.Min(MAX_LIGHTS_COUNT, lights.Count); iLight++) {
                     //Render shadow map of each light, by drawing shadow line mesh onto the shadowmap.
                     for (int iDir = 0; iDir < 4; iDir++) { //Four directions, right, down, left, up.
 
@@ -112,7 +113,7 @@ public class Shadow2DPipeline : MonoBehaviour {
             lightingCmdBuffer.Clear();
 
             lightingCmdBuffer.SetGlobalTexture(ShaderKeys.ShadowMap2D, shadowMap);
-            for (int iLight = 0; iLight < lights.Count; iLight++) {
+            for (int iLight = 0; iLight < Mathf.Min(MAX_LIGHTS_COUNT, lights.Count); iLight++) {
                 var light = lights[iLight];
                 lightingCmdBuffer.SetGlobalVector(ShaderKeys.LightParams, new Vector4(light.range, light.intensity, light.transform.position.x, light.transform.position.y));
                 lightingCmdBuffer.SetGlobalVector(ShaderKeys.LightColor, light.color);

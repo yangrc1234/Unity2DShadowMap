@@ -24,6 +24,7 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
+				float4 vertex_a : TEXCOORD0;
 			};
 
 			v2f vert(appdata v)
@@ -31,16 +32,14 @@
 				v2f o;
 				o.vertex = mul(_ShadowMap2DMVP, float4(v.vertex, 1.0));
 				o.vertex.y = (_ShadowMap2DWriteRow)* o.vertex.w;
+				o.vertex_a = o.vertex;
 				return o;
 			}
 
 			float frag(v2f i) : SV_Target
 			{
-#if UNITY_REVERSED_Z
-				return i.vertex.z;
-#else
-				return 1.0f - i.vertex.z;
-#endif
+				i.vertex_a /= i.vertex_a.w;
+				return ConvertClipPosZTo10(i.vertex_a.z);
 			}
 			ENDCG
 		}
