@@ -1,0 +1,61 @@
+# Carpetas
+__pycache__
+/.vs
+/Temp/
+/Library/
+/Private/
+/Logs/
+/obj/
+/Builds/
+/AutoBuild/
+/AssetBundleBuilds/
+/matchrecords
+/*.log
+/*.demo
+
+/Assets/AssetStore/
+/Assets/AssetStore.meta
+/Assets/AssetStoreTools/
+/Assets/AssetStoreTools.meta
+/Assets/Private/
+/Assets/Private.meta
+
+#ficheros
+
+.DS_Store
+Assets/.reuniter_data
+
+#Proyectos MonoDevelop en el raiz (no poner globalmente, o borrar�amos cosas de Plugin Sources)
+
+/*.sln
+/*.csproj
+/*.unityproj
+/*.pidb
+/*.userprefs
+
+#Backups Blender
+
+*.blend1
+*.blend2
+*.blend3
+*.blend1.meta
+*.blend2.meta
+*.blend3.meta
+
+#Visual Studio (plugins). Es necesario indicar los OBJ localizadamente, o borraremos los 3D en formato .obj
+#/Plugin[ ]Sources/NvStereoRenderer/Release/*.obj
+
+*.pch
+*.pdb
+*.dep
+*.idb
+*.suo
+*.ncb
+*.dll
+
+*.lib
+BuildLog.htm
+*.exp
+*.manifest
+*.user
+*.pyc
