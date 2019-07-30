@@ -7,7 +7,6 @@
 	{
 	Cull Off ZWrite Off ZTest Always
 	BlendOp Max
-	Blend One One
 	Pass
 	{
 		CGPROGRAM
@@ -24,7 +23,7 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
-				float4 vertex_a : TEXCOORD0;
+				float4 vertex_a : TEXCOORD0;	//A duplicate of vertex. vertex can't be directly used, it doesn't behave same on different API.
 			};
 
 			v2f vert(appdata v)

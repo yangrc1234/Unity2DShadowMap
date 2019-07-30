@@ -42,6 +42,7 @@ float2 GetClipPosXZ(float2 worldPos, float4x4 vp, out half outofbound) {
 	clipPos.z = ConvertClipPosZTo10(clipPos.z);
 	outofbound = (abs(clipPos.x) - 1.0) > 0.0 ? 1.0 : 0.0;
 	outofbound += clipPos.z - saturate(clipPos.z) != 0.0 ? 1.0 : 0.0;
+	outofbound = saturate(outofbound);
 	return float2(clipPos.x, clipPos.z);
 }
 
@@ -49,7 +50,7 @@ float SampleShadow(float2 worldPos) {
 	float shadowMapInterval;
 	float shadowMapVStart = GetShadowMapVStartAndInterval(shadowMapInterval);
 
-	//Calculate clip pos X on four positions.
+	//Calculate clip pos XZ on four directions.
 	float2 clipPosXZ[4];
 	half4 outofbound;
 	clipPosXZ[0] = GetClipPosXZ(worldPos, _ShadowMap2DVP_Right, outofbound[0]);
@@ -58,15 +59,14 @@ float SampleShadow(float2 worldPos) {
 	clipPosXZ[3] = GetClipPosXZ(worldPos, _ShadowMap2DVP_Up, outofbound[3]);
 	
 	//Sample shadowmap.
-	float shadow = 0.0;
+	float4 inShadow;
 	UNITY_UNROLL
 	for (int i = 0; i < 4; i++) {
 		float2 shadowMapUV = float2((clipPosXZ[i].x + 1.0f) / 2.0f, shadowMapVStart + i * shadowMapInterval);
-		float shadowMapClipPosZ = tex2D(_ShadowMap2D, shadowMapUV);
-
-		if (outofbound[i] == 0.0)
-			shadow = max(shadow, shadowMapClipPosZ > clipPosXZ[i].y ? 1.0 : 0.0);
+		inShadow[i] = tex2D(_ShadowMap2D, shadowMapUV) > clipPosXZ[i].y ? 1.0 : 0.0;
 	}
+
+	float shadow = saturate(dot(inShadow, 1.0 - outofbound)); //Clip all shadow values out of bound.
 	
 	return shadow;
 }

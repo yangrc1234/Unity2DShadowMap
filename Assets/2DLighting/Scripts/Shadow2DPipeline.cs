@@ -13,7 +13,7 @@ public class Shadow2DPipeline : MonoBehaviour {
     private MaterialPropertyBlock propertyBlock;
     private Mesh lightingQuad;
 
-    private const int MAX_LIGHTS_COUNT = 16;
+    private const int MAX_LIGHTS_COUNT = 64;
     private const int SHADOW_MAP_WIDTH = 256;
     private int ShadowMapHeight {
         get {
@@ -70,8 +70,15 @@ public class Shadow2DPipeline : MonoBehaviour {
 
             //Calculate V and P for each light.
             foreach (var light in lights) {
-                for (int i = 0; i < 4; i++) {
-                    var V = Matrix4x4.TRS(light.transform.position, Quaternion.Euler(90.0f * i, 90.0f, 270.0f), new Vector3(1.0f, 1.0f, -1.0f)).inverse;
+                for (int i = 0; i < 4; i++) {   //four directions.
+
+                    //This TRS here calculates light->world matrix.
+                    //The Quaternion.Euler(90.0f * i, 90.0f, 270.0f) aligns light to right, down, left, up.
+                    //-1.0f in z-component in scale corrects camera forward direction.
+                    var V = Matrix4x4.TRS(light.transform.position, Quaternion.Euler(90.0f * i, 90.0f, 270.0f), new Vector3(1.0f, 1.0f, -1.0f));
+                    //Inverse it, so it's a world->light matrix.
+                    V = V.inverse;
+
                     var P = Matrix4x4.Perspective(90.0f, 1.0f, 0.01f, 10.0f);
                     P = GL.GetGPUProjectionMatrix(P, true);
                     light.V[i] = V;
